@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GatePass - Hostel Outpass on Blockchain</title>
+  <link rel="icon" href="favicon.svg" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><img src="favicon.svg" alt="" /></div>
+      <div>
+        <h1>GatePass</h1>
+        <p>Blockchain-Based Hostel Outpass Verification System</p>
+      </div>
+    </div>
+    <div class="wallet">
+      <label for="walletSelect">Logged in as (wallet)</label>
+      <select id="walletSelect"></select>
+      <div class="wallet-info"><span id="walletRole">-</span> | <span id="walletAddr">-</span></div>
+    </div>
+  </header>
+
+  <div class="netbar">
+    <span class="dot"></span> <span id="netInfo">Connecting to blockchain...</span>
+    <span class="chaintime">Blockchain time: <b id="chainTime">-</b></span>
+  </div>
+
+  <nav class="tabs">
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="student">Student</button>
+    <button data-tab="warden">Warden</button>
+    <button data-tab="gate">Gate Security</button>
+    <button data-tab="parent">Parent View</button>
+    <button data-tab="admin">Admin</button>
+  </nav>
+
+  <main>
+    <!-- ============ DASHBOARD ============ -->
+    <section id="tab-dashboard" class="tab active">
+      <div class="stats">
+        <div class="stat"><span id="stStudents">0</span>Registered Students</div>
+        <div class="stat amber"><span id="stPending">0</span>Pending Requests</div>
+        <div class="stat blue"><span id="stOut">0</span>Currently Outside</div>
+        <div class="stat red"><span id="stLate">0</span>Late (Overdue / Returned Late)</div>
+        <div class="stat green"><span id="stReturned">0</span>Returned on Time</div>
+      </div>
+      <div class="card">
+        <h2>Students Currently Outside Hostel</h2>
+        <table>
+          <thead><tr><th>Pass</th><th>Student</th><th>Room</th><th>Destination</th><th>Went Out</th><th>Return By</th><th>Status</th></tr></thead>
+          <tbody id="outTable"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>All Outpasses (from blockchain)</h2>
+        <table>
+          <thead><tr><th>Pass</th><th>Student</th><th>Reason</th><th>Destination</th><th>Leaving</th><th>Return By</th><th>Status</th></tr></thead>
+          <tbody id="allTable"></tbody>
+        </table>
+      </div>
+      <div class="card demo">
+        <h2>&#9200; Demo Clock</h2>
+        <p class="muted">For the demo, move the blockchain time forward to show what happens when a student returns late or a pass expires.</p>
+        <div class="row">
+          <button class="btn" data-skip="1">+1 hour</button>
+          <button class="btn" data-skip="3">+3 hours</button>
+          <button class="btn" data-skip="8">+8 hours</button>
+          <button class="btn" data-skip="24">+1 day</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STUDENT ============ -->
+    <section id="tab-student" class="tab">
+      <div id="studentProfile"></div>
+      <div class="card" id="requestCard">
+        <h2>Request New Outpass</h2>
+        <div class="grid2">
+          <div><label>Reason</label>
+            <select id="pReason">
+              <option>Home visit</option><option>Medical / Hospital</option><option>Market / Shopping</option>
+              <option>Family function</option><option>Exam / Interview</option><option>Other</option>
+            </select></div>
+          <div><label>Destination (where are you going?)</label><input id="pDest" placeholder="e.g. Home - Ujjain" /></div>
+          <div><label>Leaving time</label><input id="pFrom" type="datetime-local" /></div>
+          <div><label>Return by</label><input id="pReturn" type="datetime-local" /></div>
+        </div>
+        <button class="btn primary" id="requestBtn">Send Request to Warden</button>
+      </div>
+      <h3 class="sectionh">My Outpasses</h3>
+      <div id="myPasses"></div>
+    </section>
+
+    <!-- ============ WARDEN ============ -->
+    <section id="tab-warden" class="tab">
+      <h3 class="sectionh">Pending Requests</h3>
+      <div id="pendingList"></div>
+      <div class="card">
+        <h2>All Decisions</h2>
+        <table>
+          <thead><tr><th>Pass</th><th>Student</th><th>Reason</th><th>Return By</th><th>Note</th><th>Status</th></tr></thead>
+          <tbody id="decidedTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ GATE ============ -->
+    <section id="tab-gate" class="tab">
+      <div class="card">
+        <h2>Scan Student Outpass</h2>
+        <p class="muted">Scan the QR code from the student's phone, upload a QR image, or paste the QR text.</p>
+        <div class="row">
+          <button class="btn primary" id="camBtn">Scan with Camera</button>
+          <label class="btn">Upload QR Image <input type="file" id="qrFile" accept="image/*" hidden /></label>
+        </div>
+        <div id="reader"></div>
+        <div class="row">
+          <input id="scanInput" placeholder='QR text e.g. GATEPASS|1|a1b2c3...' />
+          <button class="btn primary" id="checkBtn">Check Pass</button>
+        </div>
+      </div>
+      <div id="scanResult"></div>
+    </section>
+
+    <!-- ============ PARENT ============ -->
+    <section id="tab-parent" class="tab">
+      <div class="card">
+        <h2>Parent View - Check Your Child's Status</h2>
+        <p class="muted">No login needed. Enter the enrollment number to see live status and outpass history from the blockchain.</p>
+        <div class="row">
+          <input id="enrollInput" placeholder="Enrollment number e.g. 23100BTCSAII10101" />
+          <button class="btn primary" id="parentBtn">Check Status</button>
+        </div>
+      </div>
+      <div id="parentResult"></div>
+    </section>
+
+    <!-- ============ ADMIN ============ -->
+    <section id="tab-admin" class="tab">
+      <div class="card">
+        <h2>Register New Student</h2>
+        <div class="grid2">
+          <div><label>Student wallet</label><select id="aWallet"></select></div>
+          <div><label>Full name</label><input id="aName" placeholder="e.g. Neha Sharma" /></div>
+          <div><label>Enrollment number</label><input id="aEnroll" placeholder="e.g. 23100BTCSAII10104" /></div>
+          <div><label>Room number</label><input id="aRoom" placeholder="e.g. G-210" /></div>
+          <div><label>Parent / Guardian name</label><input id="aParent" placeholder="e.g. Mr. Anil Sharma" /></div>
+        </div>
+        <button class="btn primary" id="addStudentBtn">Register on Blockchain</button>
+      </div>
+      <div class="card">
+        <h2>Registered Users</h2>
+        <table>
+          <thead><tr><th>Name</th><th>Role</th><th>Enrollment</th><th>Room</th><th>Wallet</th></tr></thead>
+          <tbody id="usersTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="card">
+      <h2>Blockchain Transactions</h2>
+      <div id="txLog" class="txlog"><span class="muted">No transactions yet.</span></div>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+  <script src="lib/ethers.umd.min.js"></script>
+  <script src="lib/qrcode.js"></script>
+  <script src="lib/html5-qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
